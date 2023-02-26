@@ -34,7 +34,8 @@ class InfoGANMonitor(tf.keras.callbacks.Callback):
             plt.subplot(self.n_row, self.n_row, i+1)
             plt.imshow(predictions[i, :, :] * 127.5 + 127.5, cmap='gray')
             plt.axis('off')
-        fig.savefig(f'{self.log_dir}/img_epoch_{epoch}.png')
+        fig.savefig(f'{self.log_dir}/img_epoch_{epoch+1:04d}.png')
+        plt.close(fig)
         return None
 
 
@@ -58,23 +59,23 @@ def sample_test(latent_spec, batch_size,
     return noise, disc_samples, cont_samples
 
 
-def plot_test(generator, latent_spec, idx_of_varying_disc=0, idx_of_varying_cont=0):
+def plot_test(generator, latent_spec, idx_of_varting_disc=0, idx_of_varting_cont=0):
     output_image = []
-    for cat in range(10):
+    for cat in range(5):
         var_cont_images = []
         for cont in np.arange(-2, 2, 0.4):
-            noise, _, _ = sample_test(latent_spec, batch_size=1,
+            noise, _, cc = sample_test(latent_spec, batch_size=1,
                                       discrete_idx_c=(0, cat), continuous_idx_c=(0, cont))
             imgs = generator(noise)
             imgs = (imgs.numpy() + 1.) / 2.
             var_cont_images.append(imgs.reshape([28, 28]))
 
-        output_image.append(np.concatenate(var_cont_images, 0))
+        output_image.append(np.concatenate(var_cont_images, 1))
 
-    output_image = np.concatenate(output_image, 1)
+    output_image = np.concatenate(output_image, 0)
     plt.figure(figsize=(20, 10))
-    plt.title(f"varying discrete latent code {idx_of_varying_disc}, varying continuous latent code {idx_of_varying_cont}")
+    plt.title(f"varying discrete latent code {idx_of_varting_disc}, varying continuous latent code {idx_of_varting_cont}")
     plt.imshow(output_image, cmap="gray")
     plt.axis("off")
-    plt.savefig(f'varying-discrete-{idx_of_varying_disc}_varying-continuous-{idx_of_varying_cont}')
+    plt.savefig(f'varying-discrete-{idx_of_varting_disc}_varying-continuous-{idx_of_varting_cont}')
     plt.show()
