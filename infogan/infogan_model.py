@@ -79,7 +79,8 @@ from infogan.funcs import sample
 #         }
 
 class InfoGAN(Model):
-    def __init__(self, generator, discriminator, recognition, latent_spec):
+    def __init__(self, generator, discriminator, recognition,
+                 latent_spec, discrete_reg_coeff=1.0, continuous_reg_coeff=1.0):
         super(InfoGAN, self).__init__()
         self.generator = generator
         self.discriminator = discriminator
@@ -91,7 +92,8 @@ class InfoGAN(Model):
         self.disc_latent_dist = latent_spec['discrete-latent-codes'] # list of discrete latent codes
         self.latent_dist = self.cont_latent_dist + self.disc_latent_dist
 
-        self.info_reg_coeff = 1.0
+        self.lambda_disc = discrete_reg_coeff
+        self.lambda_cont = continuous_reg_coeff
 
     def compile(self, g_optimizer, d_optimizer, loss_fn):
         super(InfoGAN, self).compile()
@@ -114,11 +116,13 @@ class InfoGAN(Model):
 
             dis_loss = d_loss = self.loss_fn(tf.ones_like(real_d), real_d) + self.loss_fn(tf.zeros_like(fake_d), fake_d)
             gen_loss = g_loss = self.loss_fn(tf.ones_like(fake_d), fake_d)
-#
+            discrete_loss, continuous_loss = 0, 0
             for cont_input, cont_output in zip(cont_inputs, cont_outputs):
-                gen_loss += (tf.reduce_mean(tf.reduce_sum(tf.square(cont_input-cont_output), -1)) * 0.1)
+                continuous_loss = tf.reduce_mean(tf.reduce_sum(tf.square(cont_input-cont_output), -1)) * self.lambda_cont
+                gen_loss += continuous_loss
             for disc_input, disc_output in zip(disc_inputs, disc_outputs):
-                gen_loss += tf.keras.losses.CategoricalCrossentropy(from_logits=True)(disc_input, disc_output)
+                discrete_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)(disc_input, disc_output) * self.lambda_disc
+                gen_loss += discrete_loss
 
         g_vars = self.generator.trainable_weights + self.recognition.trainable_weights
         g_grads = gtape.gradient(gen_loss, g_vars)
@@ -133,5 +137,6 @@ class InfoGAN(Model):
             # "AA":  disc_mi_est ,
             # "D_Acc": self.dis_acc_tracker.result(),
             "MI": gen_loss - g_loss, # "Cross_Ent": cross_ent,
+            "disc_loss": discrete_loss, "cont_loss": continuous_loss
             }
 
