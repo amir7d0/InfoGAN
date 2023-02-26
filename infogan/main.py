@@ -1,13 +1,13 @@
 
 import tensorflow as tf
 import os
-import datetime
+
 from infogan.models import get_discriminator_model, get_generator_model, get_recognition_model
 from infogan.datasets import MnistDataset
 from infogan.infogan_model import InfoGAN
 from infogan.config import config
 from infogan.distributions import Uniform, Categorical
-from infogan.funcs import sample, InfoGANMonitor
+from infogan.funcs import InfoGANMonitor, InfoGANCheckpoint
 
 tf.config.run_functions_eagerly(True)
 
@@ -18,11 +18,11 @@ if __name__ == "__main__":
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(checkpoint_dir, exist_ok=True)
 
-    # load dataset
+    ### load dataset
     mnist_dataset = MnistDataset()
     dataset = mnist_dataset.get_dataset()
 
-    # define latent codes specification
+    ### define latent codes specification
     latent_spec = {
         'noise-variables': [Uniform(62)],
         'continuous-latent-codes': [Uniform(1), Uniform(1)],
@@ -37,11 +37,17 @@ if __name__ == "__main__":
         generator=generator, discriminator=discriminator, recognition=recognition,
         latent_spec=latent_spec
     )
+
+    ### Restore the latest checkpoint
+    # checkpoint = tf.train.Checkpoint(info_gan)
+    # checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+
     info_gan.compile(
         g_optimizer= tf.keras.optimizers.Adam(1e-3, 0.5),
         d_optimizer= tf.keras.optimizers.Adam(2e-4, 0.5),
         loss_fn=tf.keras.losses.BinaryCrossentropy(from_logits=True)
     )
-    cbk = InfoGANMonitor(latent_spec=latent_spec, log_dir=log_dir)
+    monitor_cbk = InfoGANMonitor(latent_spec=latent_spec, log_dir=log_dir)
+    checkpoint_cbk = InfoGANCheckpoint(checkpoint_dir)
 
-    info_gan.fit(dataset, epochs=config.epochs, callbacks=[cbk])
+    info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk])
