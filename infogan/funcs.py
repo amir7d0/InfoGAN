@@ -39,6 +39,14 @@ class InfoGANMonitor(tf.keras.callbacks.Callback):
         return None
 
 
+class InfoGANCheckpoint(tf.keras.callbacks.Callback):
+    def __init__(self, checkpoint_dir=''):
+        self.checkpoint_dir = f'{checkpoint_dir}/training_checkpoints'
+
+    def on_epoch_end(self, epoch, logs=None):
+        checkpoint = tf.train.Checkpoint(self.model)
+        checkpoint.save(self.checkpoint_dir)
+        return None
 
 def sample_test(latent_spec, batch_size,
                 discrete_idx_c=(0, 0), continuous_idx_c=(0, 0)):
@@ -61,7 +69,7 @@ def sample_test(latent_spec, batch_size,
 
 def plot_test(generator, latent_spec, idx_of_varting_disc=0, idx_of_varting_cont=0):
     output_image = []
-    for cat in range(5):
+    for cat in range(10):
         var_cont_images = []
         for cont in np.arange(-2, 2, 0.4):
             noise, _, cc = sample_test(latent_spec, batch_size=1,
