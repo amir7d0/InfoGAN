@@ -21,6 +21,8 @@ class InfoGANMonitor(tf.keras.callbacks.Callback):
         self.latent_spec = latent_spec
         self.log_dir = log_dir
 
+    def on_batch_end(self, batch, logs=None):
+
     def on_epoch_end(self, epoch, logs=None):
         noise, _, _ = sample(self.latent_spec, self.n_row ** 2)
         generated_images = self.model.generator(noise, training=False)
@@ -35,7 +37,6 @@ class InfoGANMonitor(tf.keras.callbacks.Callback):
         fig.savefig(f'{self.log_dir}/img_epoch_{epoch+1:04d}.png')
         plt.close(fig)
         return None
-
 
 
 class InfoGANCheckpoint(tf.keras.callbacks.Callback):
@@ -88,3 +89,51 @@ def plot_test(generator, latent_spec,
     plt.axis("off")
     plt.savefig(f'varying-discrete-{disc_idx}_varying-continuous-{cont_idx}')
     plt.show()
+
+
+
+import csv
+
+class InfoGANCSVLogger(tf.keras.callbacks.Callback):
+    def __init__(self, filename, separator=",", append=True):
+        self.filename = filename
+        self.sep = separator
+        self.append = append
+        self.writer = None
+        self.keys = None
+        self.append_header = True
+        super().__init__()
+
+    def on_train_begin(self, logs=None):
+        if self.append:
+            if tf.io.gfile.exists(self.filename):
+                with tf.io.gfile.GFile(self.filename, "r") as f:
+                    self.append_header = not bool(len(f.readline()))
+            mode = "a"
+        else:
+            mode = "w"
+        self.csv_file = tf.io.gfile.GFile(self.filename, mode)
+
+    def on_batch_end(self, batch, logs=None):
+        logs = logs or {}
+
+        if self.keys is None:
+            self.keys = sorted(logs.keys())
+
+        if not self.writer:
+            fieldnames = ["batch"] + self.keys
+            self.writer = csv.DictWriter(
+                self.csv_file, fieldnames=fieldnames)
+            if self.append_header:
+                self.writer.writeheader()
+
+        row_dict = {"batch": batch}
+        row_dict.update((key, logs[key]) for key in self.keys)
+        self.writer.writerow(row_dict)
+        self.csv_file.flush()
+
+    def on_train_end(self, logs=None):
+        self.csv_file.close()
+        self.writer = None
+
+
