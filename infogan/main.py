@@ -7,7 +7,7 @@ from infogan.datasets import get_dataset
 from infogan.infogan_model import InfoGAN
 from infogan.config import config
 from infogan.distributions import Uniform, Categorical
-from infogan.funcs import InfoGANMonitor, InfoGANCheckpoint
+from infogan.funcs import InfoGANMonitor, InfoGANCheckpoint, InfoGANCSVLogger
 
 tf.config.run_functions_eagerly(True)
 
@@ -47,5 +47,7 @@ if __name__ == "__main__":
     )
     monitor_cbk = InfoGANMonitor(latent_spec=latent_spec, log_dir=log_dir)
     checkpoint_cbk = InfoGANCheckpoint(checkpoint_dir)
+    csv_logger_cbk = InfoGANCSVLogger(filename=f'{config.root_log_dir}/{config.dataset_name}-loss.csv',
+                                      separator=",", append=True)
 
-    info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk])
+    info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk, csv_logger_cbk])

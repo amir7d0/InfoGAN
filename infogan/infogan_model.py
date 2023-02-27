@@ -14,8 +14,8 @@ class InfoGAN(Model):
 
         self.latent_spec = latent_spec
         self.noise_var = latent_spec['noise-variables']
-        self.cont_latent_dist = latent_spec['continuous-latent-codes'] # list of continuous latent codes
-        self.disc_latent_dist = latent_spec['discrete-latent-codes'] # list of discrete latent codes
+        self.cont_latent_dist = latent_spec['continuous-latent-codes']  # list of continuous latent codes
+        self.disc_latent_dist = latent_spec['discrete-latent-codes']    # list of discrete latent codes
         self.latent_dist = self.cont_latent_dist + self.disc_latent_dist
 
         self.lambda_disc = discrete_reg_coeff
