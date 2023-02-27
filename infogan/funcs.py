@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from infogan.distributions import Uniform, Categorical
-from infogan.config import config
 
 
 def sample(latent_spec, batch_size):
@@ -39,6 +37,7 @@ class InfoGANMonitor(tf.keras.callbacks.Callback):
         return None
 
 
+
 class InfoGANCheckpoint(tf.keras.callbacks.Callback):
     def __init__(self, checkpoint_dir=''):
         self.checkpoint_dir = f'{checkpoint_dir}/training_checkpoints'
@@ -49,14 +48,10 @@ class InfoGANCheckpoint(tf.keras.callbacks.Callback):
         return None
 
 def sample_test(latent_spec, batch_size,
-                discrete_idx_c=(0, 0), continuous_idx_c=(0, 0)):
-    z = latent_spec['noise-variables'][0].sample(batch_size)
-    # cont_latent_dist = latent_spec['continuous-latent-codes']
-    # disc_latent_dist = latent_spec['discrete-latent-codes']
-
-    # cont_samples = [dist.sample_test(cont, batch_size) for dist in cont_latent_dist]
-    # disc_samples = [dist.sample_test(cat, batch_size) for dist in disc_latent_dist]
+                discrete_idx_c=(0, 0),
+                continuous_idx_c=(0, 0)):
     _, disc_samples, cont_samples = sample(latent_spec, batch_size)
+    z = latent_spec['noise-variables'][0].sample(batch_size)
 
     idx, cat = discrete_idx_c
     disc_samples[idx] = latent_spec['discrete-latent-codes'][idx].sample_test(cat, batch_size)
@@ -67,23 +62,29 @@ def sample_test(latent_spec, batch_size,
     return noise, disc_samples, cont_samples
 
 
-def plot_test(generator, latent_spec, idx_of_varting_disc=0, idx_of_varting_cont=0):
+def plot_test(generator, latent_spec,
+              idx_range_varying_disc=(0, [0, 5]),
+              idx_range_varying_cont=(0, [-2, 2])):
+
+    disc_idx, disc_range = idx_range_varying_disc
+    cont_idx, cont_range = idx_range_varying_cont
+    step = (cont_range[1] - cont_range[0]) / 10    # 10 is the number of columns
     output_image = []
-    for cat in range(10):
+    for cat in np.arange(disc_range[0], disc_range[1], 1):
         var_cont_images = []
-        for cont in np.arange(-2, 2, 0.4):
+        for cont in np.arange(cont_range[0], cont_range[1], step):
             noise, _, cc = sample_test(latent_spec, batch_size=1,
-                                      discrete_idx_c=(0, cat), continuous_idx_c=(0, cont))
+                                       discrete_idx_c=(disc_idx, cat),
+                                       continuous_idx_c=(cont_idx, cont))
             imgs = generator(noise)
             imgs = (imgs.numpy() + 1.) / 2.
             var_cont_images.append(imgs.reshape([28, 28]))
-
         output_image.append(np.concatenate(var_cont_images, 1))
 
     output_image = np.concatenate(output_image, 0)
     plt.figure(figsize=(20, 10))
-    plt.title(f"varying discrete latent code {idx_of_varting_disc}, varying continuous latent code {idx_of_varting_cont}")
+    plt.title(f"varying discrete latent code {disc_idx}, varying continuous latent code {cont_idx}")
     plt.imshow(output_image, cmap="gray")
     plt.axis("off")
-    plt.savefig(f'varying-discrete-{idx_of_varting_disc}_varying-continuous-{idx_of_varting_cont}')
+    plt.savefig(f'varying-discrete-{disc_idx}_varying-continuous-{cont_idx}')
     plt.show()
