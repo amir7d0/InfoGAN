@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def get_dataset(dataset_name, batch_size)
+def get_dataset(dataset_name, batch_size):
     if dataset_name == 'mnist':
         return MNIST(batch_size)
     if dataset_name == 'fashion_mnist':
