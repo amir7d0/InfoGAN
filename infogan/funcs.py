@@ -21,8 +21,6 @@ class InfoGANMonitor(tf.keras.callbacks.Callback):
         self.latent_spec = latent_spec
         self.log_dir = log_dir
 
-    def on_batch_end(self, batch, logs=None):
-
     def on_epoch_end(self, epoch, logs=None):
         noise, _, _ = sample(self.latent_spec, self.n_row ** 2)
         generated_images = self.model.generator(noise, training=False)
