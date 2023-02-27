@@ -51,3 +51,4 @@ if __name__ == "__main__":
                                       separator=",", append=True)
 
     info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk, csv_logger_cbk])
+
