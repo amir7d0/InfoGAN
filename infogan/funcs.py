@@ -39,12 +39,19 @@ class InfoGANMonitor(tf.keras.callbacks.Callback):
 
 class InfoGANCheckpoint(tf.keras.callbacks.Callback):
     def __init__(self, checkpoint_dir=''):
-        self.checkpoint_dir = f'{checkpoint_dir}/training_checkpoints'
+        self.checkpoint_dir = checkpoint_dir
+
+    def on_train_begin(self, logs=None):
+        self.checkpoint = tf.train.Checkpoint(self.model)
 
     def on_epoch_end(self, epoch, logs=None):
-        checkpoint = tf.train.Checkpoint(self.model)
-        checkpoint.save(self.checkpoint_dir)
+        path = f'{self.checkpoint_dir}/training_checkpoints'
+        self.save_path = self.checkpoint.save(path)
         return None
+
+    def on_train_end(self, logs=None):
+        print(f"Model saved in {self.save_path}")
+
 
 def sample_test(latent_spec, batch_size,
                 discrete_idx_c=(0, 0),
