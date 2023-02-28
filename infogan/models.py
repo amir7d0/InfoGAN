@@ -55,8 +55,9 @@ def get_recognition_model(shape, latent_spec):
         disc_outputs.append(tf.keras.layers.Dense(dist.dim, name=f'categorical_code_{i}')(x))
     cont_outputs = []
     for i, dist in enumerate(latent_spec['continuous-latent-codes']):
-        cont_mu = tf.keras.layers.Dense(1)(x)
-        cont_var = tf.keras.layers.Dense(1)(x)
-        cont_outputs.append(Sampling(name=f'continuous_code_{i}')([cont_mu, cont_var]))
+        cont_mu = tf.keras.layers.Dense(1, name=f'z_mean_continuous_code_{i}')(x)
+        cont_var = tf.keras.layers.Dense(1, name=f'z_log_var_continuous_code_{i}')(x)
+        cont_outputs.append([Sampling(name=f'continuous_code_{i}')([cont_mu, cont_var]),
+                             cont_mu, cont_var])
 
     return tf.keras.models.Model(inputs=mid, outputs=[disc_outputs, cont_outputs])

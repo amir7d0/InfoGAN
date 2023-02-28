@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import Model
 from infogan.funcs import sample
+from infogan.utils import GaussianNLLLoss
 
 
 class InfoGAN(Model):
@@ -20,6 +21,8 @@ class InfoGAN(Model):
 
         self.lambda_disc = discrete_reg_coeff
         self.lambda_cont = continuous_reg_coeff
+
+        self.continuous_loss = GaussianNLLLoss()
 
     def compile(self, g_optimizer, d_optimizer, loss_fn):
         super(InfoGAN, self).compile()
@@ -44,8 +47,11 @@ class InfoGAN(Model):
             gen_loss = g_loss = self.loss_fn(tf.ones_like(fake_d), fake_d)
             discrete_loss, continuous_loss = 0, 0
             for cont_input, cont_output in zip(cont_inputs, cont_outputs):
-                continuous_loss = tf.reduce_mean(tf.reduce_sum(tf.square(cont_input-cont_output), -1)) * self.lambda_cont
+                z, z_mean, z_log_var = cont_output
+                continuous_loss = self.continuous_loss(cont_input, z_mean, z_log_var)
+                # continuous_loss = tf.reduce_mean(tf.reduce_sum(tf.square(cont_input-cont_output), -1)) * self.lambda_cont
                 gen_loss += continuous_loss
+
             for disc_input, disc_output in zip(disc_inputs, disc_outputs):
                 discrete_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)(disc_input, disc_output) * self.lambda_disc
                 gen_loss += discrete_loss
@@ -62,9 +68,11 @@ class InfoGAN(Model):
             "G_loss": g_loss, "D_loss": d_loss,
             # "AA":  disc_mi_est ,
             # "D_Acc": self.dis_acc_tracker.result(),
-            "MI": gen_loss - g_loss, # "Cross_Ent": cross_ent,
+            "MI": (gen_loss - g_loss),
+            # "Cross_Ent": cross_ent,
             "disc_loss": discrete_loss, "cont_loss": continuous_loss
             }
+
 
 # class InfoGAN(Model):
 #     def __init__(self, generator, discriminator, recognition, latent_spec):
