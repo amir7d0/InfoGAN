@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 class Sampling(tf.keras.layers.Layer):
     """Uses (z_mean, z_log_var) to sample z"""
     def call(self, inputs):
