@@ -2,7 +2,7 @@
 import tensorflow as tf
 import os
 
-from infogan.models import get_discriminator_model, get_generator_model, get_recognition_model
+from infogan.models.mnist_models import get_discriminator_model, get_generator_model, get_recognition_model
 from infogan.datasets import get_dataset
 from infogan.infogan_model import InfoGAN
 from infogan.config import config
