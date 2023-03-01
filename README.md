@@ -1,6 +1,11 @@
 # InfoGAN
 
-This repository contains an implementation of InfoGAN on the MNIST dataset using TensorFlow 2.0.
+	This repository contains an implementation of InfoGAN on the MNIST dataset using TensorFlow 2.0.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/amir7d0/InfoGAN/blob/main/infogan.ipynb]
+
+[![Open In W&B](https://assets.website-files.com/5ac6b7f2924c656f2b13a88c/60de02f3843862bd5d482a51_weights-and-biases-logo-black.svg)(https://wandb.ai/amir7d0/InfoGAN)
+
 
 
 ## Requirements
