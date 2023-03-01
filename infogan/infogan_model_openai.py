@@ -51,7 +51,7 @@ class InfoGAN(tf.keras.models.Model):
 
             mi_est, cross_ent = 0, 0
             for cont_input, cont_output in zip(cont_inputs, cont_outputs):
-                z, z_mean, z_log_var = cont_output
+                # z, z_mean, z_log_var = cont_output
                 # continuous_loss = self.continuous_loss(cont_input, z_mean, z_log_var)
                 # gen_loss += self.lambda_cont * continuous_loss
                 ########## START ##########
@@ -73,7 +73,7 @@ class InfoGAN(tf.keras.models.Model):
                 self.log_vars['CrossEnt_cont'].append(cont_cross_ent)
 
                 gen_loss -= self.lambda_cont * cont_mi_est
-                dis_loss -= self.lambda_cont * cont_mi_est
+                # dis_loss -= self.lambda_cont * cont_mi_est
                 ########## END ##########
 
             for idx, (disc_input, disc_output) in enumerate(zip(disc_inputs, disc_outputs)):
@@ -98,7 +98,7 @@ class InfoGAN(tf.keras.models.Model):
                 self.log_vars['MI_disc'].append(disc_mi_est)
                 self.log_vars['CrossEnt_disc'].append(disc_cross_ent)
                 gen_loss -= self.lambda_disc * disc_mi_est
-                dis_loss -= self.lambda_disc * disc_mi_est
+                # dis_loss -= self.lambda_disc * disc_mi_est
                 ########## END ##########
 
         g_vars = self.generator.trainable_weights + self.recognition.trainable_weights

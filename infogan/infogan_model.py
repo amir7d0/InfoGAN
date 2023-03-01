@@ -12,9 +12,9 @@ class InfoGAN(tf.keras.models.Model):
         self.recognition = recognition
 
         self.latent_spec = latent_spec
-        self.noise_var = latent_spec['noise-variables']
-        self.cont_latent_dist = latent_spec['continuous-latent-codes']  # list of continuous latent codes
-        self.disc_latent_dist = latent_spec['discrete-latent-codes']    # list of discrete latent codes
+        # self.noise_var = latent_spec['noise-variables']
+        # self.cont_latent_dist = latent_spec['continuous-latent-codes']  # list of continuous latent codes
+        # self.disc_latent_dist = latent_spec['discrete-latent-codes']    # list of discrete latent codes
 
         self.lambda_disc = discrete_reg_coeff
         self.lambda_cont = continuous_reg_coeff
@@ -22,12 +22,11 @@ class InfoGAN(tf.keras.models.Model):
         self.log_prob = LogProb()
         self.g_optimizer, self.d_optimizer = None, None
         self.loss_fn = None
-        log_keys = ['G_loss', 'D_loss', 'MI_cont', 'CrossEnt_cont', 'MI_disc', 'CrossEnt_disc',
-                    'MI', 'CrossEnt']
+        log_keys = ['G_loss', 'D_loss', 'Disc_loss', 'Cont_loss']
         self.log_vars = dict(zip(log_keys, [[] for _ in log_keys]))
 
     def compile(self, g_optimizer, d_optimizer, loss_fn):
-        super(InfoGAN, self).compile()
+        super(self).compile()
         self.g_optimizer = g_optimizer
         self.d_optimizer = d_optimizer
         self.loss_fn = loss_fn
@@ -49,28 +48,21 @@ class InfoGAN(tf.keras.models.Model):
             self.log_vars['G_loss'].append(g_loss)
             self.log_vars['D_loss'].append(g_loss)
 
-            mi_est, cross_ent = 0, 0
+            disc_loss, cont_loss = 0, 0
             for cont_input, cont_output in zip(cont_inputs, cont_outputs):
                 z, z_mean, z_log_var = cont_output
                 cont_cross_ent = self.continuous_loss(cont_input, z_mean, z_log_var)
-                cont_mi_est = - cont_cross_ent
-                mi_est += cont_mi_est
-                cross_ent += cont_cross_ent
-                self.log_vars['MI_cont'].append(cont_mi_est)
-                self.log_vars['CrossEnt_cont'].append(cont_cross_ent)
-
+                cont_mi_est = - cont_cross_ent  # ignore H(c) in L_I
                 gen_loss -= self.lambda_cont * cont_mi_est
-                dis_loss -= self.lambda_cont * cont_mi_est
+                # dis_loss -= self.lambda_cont * cont_mi_est
+                cont_loss += cont_cross_ent
 
-            for idx, (disc_input, disc_output) in enumerate(zip(disc_inputs, disc_outputs)):
+            for disc_input, disc_output in zip(disc_inputs, disc_outputs):
                 disc_cross_ent = tf.keras.losses.CategoricalCrossentropy(from_logits=True)(disc_input, disc_output)
-                disc_mi_est = - disc_cross_ent  # MI = H(c) - H(c|x), ignore H(c) bc it's constant
-                mi_est += disc_mi_est
-                cross_ent += disc_cross_ent
-                self.log_vars['MI_disc'].append(disc_mi_est)
-                self.log_vars['CrossEnt_disc'].append(disc_cross_ent)
+                disc_mi_est = - disc_cross_ent  # H(c) is constant so ignore it in MI = H(c) - H(c|x)
                 gen_loss -= self.lambda_disc * disc_mi_est
-                dis_loss -= self.lambda_disc * disc_mi_est
+                # dis_loss -= self.lambda_disc * disc_mi_est
+                disc_loss += disc_cross_ent
 
         g_vars = self.generator.trainable_weights + self.recognition.trainable_weights
         g_grads = gtape.gradient(gen_loss, g_vars)
@@ -80,9 +72,8 @@ class InfoGAN(tf.keras.models.Model):
         d_grads = dtape.gradient(dis_loss, d_vars)
         self.d_optimizer.apply_gradients(zip(d_grads, d_vars))
 
-        self.log_vars['MI'].append(mi_est)
-        self.log_vars['CrossEnt'].append(cross_ent)
-
-        return {"G_loss": g_loss, "D_loss": d_loss,
-                "MI": mi_est, "Cross_Ent": cross_ent}
+        self.log_vars['Disc_loss'].append(disc_loss)
+        self.log_vars['Cont_loss'].append(cont_loss)
+        return {"G_loss": g_loss, "D_loss": d_loss, "Info_loss": dis_loss+cont_loss,
+                "Disc_loss": disc_loss, "Cont_loss": cont_loss}
 
