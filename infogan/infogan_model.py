@@ -26,7 +26,7 @@ class InfoGAN(tf.keras.models.Model):
         self.log_vars = dict(zip(log_keys, [[] for _ in log_keys]))
 
     def compile(self, g_optimizer, d_optimizer, loss_fn):
-        super(self).compile()
+        super(InfoGAN, self).compile()
         self.g_optimizer = g_optimizer
         self.d_optimizer = d_optimizer
         self.loss_fn = loss_fn
