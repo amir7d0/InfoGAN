@@ -22,8 +22,6 @@ class InfoGAN(tf.keras.models.Model):
         self.log_prob = LogProb()
         self.g_optimizer, self.d_optimizer = None, None
         self.loss_fn = None
-        log_keys = ['G_loss', 'D_loss', 'Disc_loss', 'Cont_loss']
-        self.log_vars = dict(zip(log_keys, [[] for _ in log_keys]))
 
     def compile(self, g_optimizer, d_optimizer, loss_fn):
         super(InfoGAN, self).compile()
@@ -45,8 +43,6 @@ class InfoGAN(tf.keras.models.Model):
 
             dis_loss = d_loss = self.loss_fn(tf.ones_like(real_d), real_d) + self.loss_fn(tf.zeros_like(fake_d), fake_d)
             gen_loss = g_loss = self.loss_fn(tf.ones_like(fake_d), fake_d)
-            self.log_vars['G_loss'].append(g_loss)
-            self.log_vars['D_loss'].append(g_loss)
 
             disc_loss, cont_loss = 0, 0
             for cont_input, cont_output in zip(cont_inputs, cont_outputs):
@@ -72,8 +68,7 @@ class InfoGAN(tf.keras.models.Model):
         d_grads = dtape.gradient(dis_loss, d_vars)
         self.d_optimizer.apply_gradients(zip(d_grads, d_vars))
 
-        self.log_vars['Disc_loss'].append(disc_loss)
-        self.log_vars['Cont_loss'].append(cont_loss)
         return {"G_loss": g_loss, "D_loss": d_loss, "Info_loss": dis_loss+cont_loss,
                 "Disc_loss": disc_loss, "Cont_loss": cont_loss}
+
 
