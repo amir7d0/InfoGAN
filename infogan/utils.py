@@ -145,3 +145,43 @@ class InfoGANCSVLogger(tf.keras.callbacks.Callback):
     def on_train_end(self, logs=None):
         self.csv_file.close()
         self.writer = None
+
+
+# import wandb
+# from typing import Any, Dict, Optional, Union
+#
+#
+# class InfoGANWBLogger(tf.keras.callbacks.Callback):
+#     def __init__(
+#         self,
+#         log_freq: int = 1,
+#         initial_global_step: int = 0,
+#         *args: Any,
+#         **kwargs: Any,
+#     ) -> None:
+#         super().__init__(*args, **kwargs)
+#         if wandb.run is None:
+#             raise wandb.Error("You must call `wandb.init()` before WandbMetricsLogger()")
+#         self.global_batch = 0
+#         self.global_step = initial_global_step
+#         self.log_freq: Any = log_freq
+#         # define custom x-axis for batch logging.
+#         wandb.define_metric("batch/batch_step")
+#         # set all batch metrics to be logged against batch_step.
+#         wandb.define_metric("batch/*", step_metric="batch/batch_step")
+#
+#
+#     def on_train_batch_end(self, batch: int, logs: Optional[Dict[str, Any]] = None) -> None:
+#         self.global_step += 1
+#         """An alias for `on_train_batch_end` for backwards compatibility."""
+#         if batch % self.log_freq == 0:
+#             logs = {f"batch/{k}": v for k, v in logs.items()} if logs else {}
+#             logs["batch/batch_step"] = self.global_batch
+#
+#             lr = self._get_lr()
+#             if lr is not None:
+#                 logs["batch/learning_rate"] = lr
+#
+#             wandb.log(logs)
+#
+#             self.global_batch += self.log_freq
