@@ -61,6 +61,6 @@ if __name__ == "__main__":
 
     info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk,
                                                            csv_logger_cbk,
-                                                           # wandb.keras.WandbMetricsLogger(log_freq='batch')]
+                                                           wandb.keras.WandbMetricsLogger(log_freq='batch')]
                  )
     
