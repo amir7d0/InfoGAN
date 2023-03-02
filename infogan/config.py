@@ -10,7 +10,7 @@ class Config(object):
         self.root_log_dir = "logs/"
         self.root_checkpoint_dir = "ckt/"
 
-        self.wandb_api_key = '46b244dbb3910bad5dbed38921ed6bdf010c4619'  # add W&B api key or leave blank
+        self.wandb_api_key = ''  # add W&B api key
 
 
 config = Config()
