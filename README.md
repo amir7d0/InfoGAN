@@ -5,7 +5,7 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/amir7d0/InfoGAN/blob/main/infogan.ipynb)
 
-[![Open In W&B](https://assets.website-files.com/5ac6b7f2924c656f2b13a88c/60de02f3843862bd5d482a51_weights-and-biases-logo-black.svg)](https://wandb.ai/amir7d0/InfoGAN)
+[![Open In W&B](https://assets.website-files.com/5ac6b7f2924c656f2b13a88c/60de02f3843862bd5d482a51_weights-and-biases-logo-black.svg)](https://wandb.ai/amir7d0/infogan_mnist)
 
 
 ## Requirements
@@ -80,10 +80,12 @@ In `infogan_model_openai.py` Continuous Latent code is optimized by minimizing G
 * Batch size = 128
 
 #### Generated Images
+Row represents categorical latent code from 0 to 9 and column represents continuous latent code varying from -1 to 1 (left to right).
+
 <table align='center'>
 <tr align='center'>
-<th> first continuous variable varying from -2 to 2 </th>
-<th> second continuous variable varying from -2 to 2 </th>
+<th> first continuous variable varying from -1 to 1 </th>
+<th> second continuous variable varying from -1 to 1 </th>
 </tr>
 <tr>
 <td><img src = 'results/mnist_results/varying-discrete-0_varying-continuous-0.png' height = '450'>
