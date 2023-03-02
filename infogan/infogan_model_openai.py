@@ -1,7 +1,7 @@
 import tensorflow as tf
 from infogan.utils import sample
 from infogan.distributions import GaussianNLLLoss, LogProb
-
+import wandb
 
 class InfoGAN(tf.keras.models.Model):
     def __init__(self, generator, discriminator, recognition,
@@ -47,10 +47,10 @@ class InfoGAN(tf.keras.models.Model):
             dis_loss = d_loss = self.loss_fn(tf.ones_like(real_d), real_d) + self.loss_fn(tf.zeros_like(fake_d), fake_d)
             gen_loss = g_loss = self.loss_fn(tf.ones_like(fake_d), fake_d)
             self.log_vars['G_loss'].append(g_loss)
-            self.log_vars['D_loss'].append(g_loss)
-
+            self.log_vars['D_loss'].append(d_loss)
+            wandb.log({'G_loss': g_loss, 'D_loss': d_loss})
             mi_est, cross_ent = 0, 0
-            for cont_input, cont_output in zip(cont_inputs, cont_outputs):
+            for idx, (cont_input, cont_output) in enumerate(zip(cont_inputs, cont_outputs)):
                 # z, z_mean, z_log_var = cont_output
                 # continuous_loss = self.continuous_loss(cont_input, z_mean, z_log_var)
                 # gen_loss += self.lambda_cont * continuous_loss
@@ -73,7 +73,11 @@ class InfoGAN(tf.keras.models.Model):
                 self.log_vars['CrossEnt_cont'].append(cont_cross_ent)
 
                 gen_loss -= self.lambda_cont * cont_mi_est
-                # dis_loss -= self.lambda_cont * cont_mi_est
+                dis_loss -= self.lambda_cont * cont_mi_est
+
+                wandb.log({f'cont_ent_{idx}': cont_ent,
+                           f'cont_cross_ent_{idx}': cont_cross_ent,
+                           f'cont_mi_est_{idx}': cont_mi_est})
                 ########## END ##########
 
             for idx, (disc_input, disc_output) in enumerate(zip(disc_inputs, disc_outputs)):
@@ -98,7 +102,11 @@ class InfoGAN(tf.keras.models.Model):
                 self.log_vars['MI_disc'].append(disc_mi_est)
                 self.log_vars['CrossEnt_disc'].append(disc_cross_ent)
                 gen_loss -= self.lambda_disc * disc_mi_est
-                # dis_loss -= self.lambda_disc * disc_mi_est
+                dis_loss -= self.lambda_disc * disc_mi_est
+
+                wandb.log({f'disc_ent_{idx}': disc_ent,
+                           f'disc_cross_ent_{idx}': disc_cross_ent,
+                           f'disc_mi_est_{idx}': disc_mi_est})
                 ########## END ##########
 
         g_vars = self.generator.trainable_weights + self.recognition.trainable_weights
@@ -112,6 +120,11 @@ class InfoGAN(tf.keras.models.Model):
         self.log_vars['MI'].append(mi_est)
         self.log_vars['CrossEnt'].append(cross_ent)
 
+        wandb.log({f'MI': mi_est,
+                   f'CrossEnt': cross_ent,
+                   f'Gen_loss': gen_loss,
+                   f'Dis_loss': dis_loss})
+
         return {"G_loss": g_loss, "D_loss": d_loss,
                 "MI": mi_est, "Cross_Ent": cross_ent}
-
+    
