@@ -68,5 +68,4 @@ class InfoGAN(tf.keras.models.Model):
 
         return {"G_loss": g_loss, "D_loss": d_loss, "Info_loss": dis_loss+cont_loss,
                 "Disc_loss": disc_loss, "Cont_loss": cont_loss}
-
-
+    
