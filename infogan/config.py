@@ -13,13 +13,7 @@ class Config(object):
         self.root_checkpoint_dir = "ckt/"
 
         self.wandb_api_key = ''  # add W&B api key
-<<<<<<< HEAD
-
-
-config = Config()
-=======
 
 
 config = Config()
 
->>>>>>> neg-loss

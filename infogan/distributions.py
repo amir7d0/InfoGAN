@@ -56,4 +56,4 @@ class LogProb:
         mu, var = z_mean, tf.math.exp(z_log_var)
         neg_l = -0.5 * (tf.math.log(2 * np.pi * var + TINY) + (x - mu) ** 2 / (var + TINY))
         return tf.reduce_sum(neg_l, axis=1)
-
+    
