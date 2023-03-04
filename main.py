@@ -40,7 +40,9 @@ if __name__ == "__main__":
 
     info_gan = InfoGAN(
         generator=generator, discriminator=discriminator, recognition=recognition,
-        latent_spec=latent_spec, discrete_reg_coeff=1.0, continuous_reg_coeff=1.0)
+        latent_spec=latent_spec,
+        discrete_reg_coeff=config.lambda_disc,
+        continuous_reg_coeff=config.lambda_cont)
 
     ## Restore the latest checkpoint
     # checkpoint = tf.train.Checkpoint(info_gan)
@@ -50,8 +52,8 @@ if __name__ == "__main__":
     # checkpoint.restore(save_path)
 
     info_gan.compile(
-        g_optimizer=tf.keras.optimizers.Adam(1e-3, 0.5),
-        d_optimizer=tf.keras.optimizers.Adam(2e-4, 0.5),
+        g_optimizer=tf.keras.optimizers.Adam(config.gen_lr, 0.5),
+        d_optimizer=tf.keras.optimizers.Adam(config.dis_lr, 0.5),
         loss_fn=tf.keras.losses.BinaryCrossentropy(from_logits=True)
     )
     monitor_cbk = InfoGANMonitor(latent_spec=latent_spec, log_dir=log_dir)
@@ -59,8 +61,9 @@ if __name__ == "__main__":
     csv_logger_cbk = InfoGANCSVLogger(filename=f'{config.root_log_dir}/{config.dataset_name}-loss.csv',
                                       separator=",", append=True)
 
-    info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk,
-                                                           csv_logger_cbk,
-                                                           wandb.keras.WandbMetricsLogger(log_freq='batch')]
+    info_gan.fit(dataset, epochs=config.epochs, callbacks=[
+        monitor_cbk, checkpoint_cbk,
+        csv_logger_cbk,
+        wandb.keras.WandbMetricsLogger(log_freq='batch')]
                  )
-    
+
