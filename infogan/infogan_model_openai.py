@@ -57,7 +57,7 @@ class InfoGAN(tf.keras.models.Model):
                 cont_log_q_c_given_x = self.log_prob(cont_reg_z, cont_reg_dist_info[0], cont_reg_dist_info[1])
                 """ Calculate log probability for input_dist(Uniform) and
                     a normal distribution (mean=0, var=1)"""
-                mean, log_var = tf.zeros_like(cont_reg_dist_info[0]), tf.ones_like(cont_reg_dist_info[1])
+                mean, log_var = tf.zeros_like(cont_reg_dist_info[0]), tf.zeros_like(cont_reg_dist_info[1])
                 cont_log_q_c = self.log_prob(cont_reg_z, mean, log_var)
                 cont_cross_ent = tf.reduce_mean(-cont_log_q_c_given_x)
                 cont_ent = tf.reduce_mean(-cont_log_q_c)
