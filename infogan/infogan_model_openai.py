@@ -65,7 +65,6 @@ class InfoGAN(tf.keras.models.Model):
                 mi_est += cont_mi_est
                 cross_ent += cont_cross_ent
                 gen_loss -= self.lambda_cont * cont_mi_est
-                dis_loss -= self.lambda_cont * cont_mi_est
                 """########## END ##########"""
 
             for idx, (disc_input, disc_output) in enumerate(zip(disc_inputs, disc_outputs)):
@@ -88,7 +87,6 @@ class InfoGAN(tf.keras.models.Model):
                 mi_est += disc_mi_est
                 cross_ent += disc_cross_ent
                 gen_loss -= self.lambda_disc * disc_mi_est
-                dis_loss -= self.lambda_disc * disc_mi_est
                 """########## END ##########"""
 
         g_vars = self.generator.trainable_weights + self.recognition.trainable_weights

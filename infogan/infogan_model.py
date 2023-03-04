@@ -50,14 +50,12 @@ class InfoGAN(tf.keras.models.Model):
                 cont_cross_ent = self.continuous_loss(cont_input, z_mean, z_log_var)
                 cont_mi_est = - cont_cross_ent  # ignore H(c) in L_I
                 gen_loss -= self.lambda_cont * cont_mi_est
-                # dis_loss -= self.lambda_cont * cont_mi_est
                 cont_loss += cont_cross_ent
 
             for disc_input, disc_output in zip(disc_inputs, disc_outputs):
                 disc_cross_ent = tf.keras.losses.CategoricalCrossentropy(from_logits=True)(disc_input, disc_output)
                 disc_mi_est = - disc_cross_ent  # H(c) is constant so ignore it in MI = H(c) - H(c|x)
                 gen_loss -= self.lambda_disc * disc_mi_est
-                # dis_loss -= self.lambda_disc * disc_mi_est
                 disc_loss += disc_cross_ent
 
         g_vars = self.generator.trainable_weights + self.recognition.trainable_weights
