@@ -1,10 +1,12 @@
 import tensorflow as tf
 
+
 def get_dataset(dataset_name, batch_size):
     if dataset_name == 'mnist':
         return MNIST(batch_size)
     if dataset_name == 'fashion_mnist':
         return FashionMNIST(batch_size)
+
 
 class MNIST(object):
     def __init__(self, batch_size):
@@ -20,6 +22,7 @@ class MNIST(object):
         ds = tf.data.Dataset.from_tensor_slices(train_images)
         ds = ds.shuffle(30000).batch(self.batch_size)
         self.dataset = ds
+
     def get_dataset(self):
         return self.dataset
 
@@ -38,6 +41,7 @@ class FashionMNIST(object):
         ds = tf.data.Dataset.from_tensor_slices(train_images)
         ds = ds.shuffle(30000).batch(self.batch_size)
         self.dataset = ds
+
     def get_dataset(self):
         return self.dataset
 
@@ -45,3 +49,4 @@ class FashionMNIST(object):
 class SVHN:
     def __init__(self, batch_size):
         pass
+    

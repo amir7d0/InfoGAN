@@ -1,17 +1,23 @@
 
 import tensorflow as tf
 import os
+import wandb
 
-from infogan.models import get_discriminator_model, get_generator_model, get_recognition_model
+from infogan.models.mnist_models import get_discriminator_model, get_generator_model, get_recognition_model
 from infogan.datasets import get_dataset
-from infogan.infogan_model import InfoGAN
+from infogan.infogan_model_openai import InfoGAN
 from infogan.config import config
 from infogan.distributions import Uniform, Categorical
-from infogan.funcs import InfoGANMonitor, InfoGANCheckpoint, InfoGANCSVLogger
+from infogan.utils import InfoGANMonitor, InfoGANCheckpoint, InfoGANCSVLogger
 
 tf.config.run_functions_eagerly(True)
 
+
 if __name__ == "__main__":
+    if config.wandb_api_key:
+        wandb.login(key=config.wandb_api_key)
+        wandb.init(project=f'InfoGAN_{config.dataset_name}')
+
     log_dir = os.path.join(config.root_log_dir, config.dataset_name)
     checkpoint_dir = os.path.join(config.root_checkpoint_dir, config.dataset_name)
     os.makedirs(log_dir, exist_ok=True)
@@ -53,7 +59,8 @@ if __name__ == "__main__":
     csv_logger_cbk = InfoGANCSVLogger(filename=f'{config.root_log_dir}/{config.dataset_name}-loss.csv',
                                       separator=",", append=True)
 
-    info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk, csv_logger_cbk])
-
-
-
+    info_gan.fit(dataset, epochs=config.epochs, callbacks=[monitor_cbk, checkpoint_cbk,
+                                                           csv_logger_cbk,
+                                                           wandb.keras.WandbMetricsLogger(log_freq='batch')]
+                 )
+    

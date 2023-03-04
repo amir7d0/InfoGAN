@@ -1,7 +1,7 @@
 
 class Config(object):
     def __init__(self):
-        self.epochs = 10
+        self.epochs = 50
         self.batch_size = 128
         self.gen_lr = 1e-3
         self.dis_lr = 2e-4
@@ -13,6 +13,13 @@ class Config(object):
         self.root_checkpoint_dir = "ckt/"
 
         self.wandb_api_key = ''  # add W&B api key
+<<<<<<< HEAD
 
 
 config = Config()
+=======
+
+
+config = Config()
+
+>>>>>>> neg-loss
